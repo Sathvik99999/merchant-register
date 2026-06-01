@@ -1,4 +1,4 @@
-₹<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
@@ -59,7 +59,6 @@ border:none;
 border-radius:10px;
 font-size:16px;
 }
-
 button{
 padding:12px 18px;
 background:gold;
@@ -74,10 +73,6 @@ margin-top:15px;
 background:rgba(255,255,255,0.05);
 padding:15px;
 border-radius:12px;
-}
-
-h2{
-color:gold;
 }
 </style>
 </head>
@@ -94,38 +89,23 @@ color:gold;
 <div id="dashboard" style="display:none;">
 
 <div class="summary">
-<div class="box">
-<h2>Total Weight</h2>
-<p id="totalWeight">0 g</p>
-</div>
-
-<div class="box">
-<h2>Total Paid</h2>
-<p id="totalPaid">₹0</p>
-</div>
-
-<div class="box">
-<h2>Total Entries</h2>
-<p id="totalEntries">0</p>
-</div>
+<div class="box"><h2>Total Weight</h2><p id="totalWeight">0 g</p></div>
+<div class="box"><h2>Total Paid</h2><p id="totalPaid">₹0</p></div>
+<div class="box"><h2>Total Entries</h2><p id="totalEntries">0</p></div>
 </div>
 
 <div class="grid">
 
 <div class="card">
 <h2>Items Section</h2>
-
 <input id="itemName" placeholder="Item Name">
-<input id="itemWeight" type="number" placeholder="Weight in grams">
-
+<input id="itemWeight" type="number" placeholder="Weight">
 <button onclick="addItem()">Add Item</button>
-
 <div id="itemHistory" class="history"></div>
 </div>
 
 <div class="card">
 <h2>Payments Section</h2>
-
 <input id="paymentAmount" type="number" placeholder="Amount">
 
 <select id="paymentType">
@@ -135,130 +115,106 @@ color:gold;
 </select>
 
 <button onclick="addPayment()">Add Payment</button>
-
 <div id="paymentHistory" class="history"></div>
 </div>
 
 </div>
 </div>
 
-<script>
-let db = JSON.parse(localStorage.getItem("merchantDB")) || {};
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+apiKey: "AIzaSyBYbr58pvJKXZCPrxCd4hYMpzVQ9c2R4DM",
+authDomain: "slb-merchant-register.firebaseapp.com",
+projectId: "slb-merchant-register",
+storageBucket: "slb-merchant-register.firebasestorage.app",
+messagingSenderId: "222766162905",
+appId: "1:222766162905:web:b0a0fda92d49bdac00efc8",
+measurementId: "G-11X2DXV21S"
+};
+
+const app = initializeApp(firebaseConfig);
+const firestoreDB = getFirestore(app);
+
+let db = {};
 let currentMerchant = "";
 
-function saveDB(){
-localStorage.setItem("merchantDB", JSON.stringify(db));
+async function saveDB(){
+await setDoc(doc(firestoreDB,"merchantData","main"),db);
 }
 
-function openMerchant(){
-currentMerchant = document.getElementById("merchant").value;
+async function loadDB(){
+const snap = await getDoc(doc(firestoreDB,"merchantData","main"));
+if(snap.exists()){
+db = snap.data();
+if(currentMerchant) render();
+}
+}
+
+window.openMerchant = async function(){
+currentMerchant=document.getElementById("merchant").value;
+
+await loadDB();
 
 if(!db[currentMerchant]){
 db[currentMerchant]={items:[],payments:[]};
+await saveDB();
 }
 
 document.getElementById("dashboard").style.display="block";
 render();
-saveDB();
 }
 
-function addItem(){
+window.addItem = async function(){
 let item=document.getElementById("itemName").value;
 let weight=parseFloat(document.getElementById("itemWeight").value);
 
 if(item && !isNaN(weight)){
 db[currentMerchant].items.push({
-item:item,
-weight:weight,
-date:new Date().toLocaleString()
+item,weight,date:new Date().toLocaleString()
 });
-saveDB();
+await saveDB();
 render();
 }
 }
 
-function addPayment(){
+window.addPayment = async function(){
 let amount=parseFloat(document.getElementById("paymentAmount").value);
 let type=document.getElementById("paymentType").value;
-
 if(!isNaN(amount)){
 db[currentMerchant].payments.push({
-amount:amount,
-type:type,
-date:new Date().toLocaleString()
+amount,type,date:new Date().toLocaleString()
 });
-saveDB();
+await saveDB();
 render();
 }
 }
 
 function render(){
-let itemHTML="";
-let paymentHTML="";
-let totalWeight=0;
-let totalPaid=0;
+let totalWeight=0,totalPaid=0;
+let itemHTML="",paymentHTML="";
 
 db[currentMerchant].items.forEach((x,i)=>{
 totalWeight+=x.weight;
-itemHTML+=`
-<div>
-${x.date}<br>
-${x.item} - ${x.weight} g
-<button onclick="deleteItem(${i})">Delete</button>
-<hr>
-</div>`;
+itemHTML+=⁠ ${x.date}<br>${x.item} - ${x.weight} g<hr> ⁠;
 });
 
 db[currentMerchant].payments.forEach((x,i)=>{
 totalPaid+=x.amount;
-paymentHTML+=`
-<div>
-${x.date}<br>
-₹${x.amount} via ${x.type}
-<button onclick="deletePayment(${i})">Delete</button>
-<hr>
-</div>`;
+paymentHTML+=⁠ ${x.date}<br>₹${x.amount} via ${x.type}<hr> ⁠;
 });
 
 document.getElementById("itemHistory").innerHTML=itemHTML;
 document.getElementById("paymentHistory").innerHTML=paymentHTML;
-
 document.getElementById("totalWeight").innerText=totalWeight+" g";
 document.getElementById("totalPaid").innerText="₹"+totalPaid;
 document.getElementById("totalEntries").innerText=
-db[currentMerchant].items.length + db[currentMerchant].payments.length;
+db[currentMerchant].items.length+db[currentMerchant].payments.length;
 }
 
-function deleteItem(i){
-db[currentMerchant].items.splice(i,1);
-saveDB();
-render();
-}
-
-function deletePayment(i){
-db[currentMerchant].payments.splice(i,1);
-saveDB();
-render();
-}
-</script>
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyBYbr58pvJKXZCPrxCd4hYMpzVQ9c2R4DM",
-  authDomain: "slb-merchant-register.firebaseapp.com",
-  projectId: "slb-merchant-register",
-  storageBucket: "slb-merchant-register.firebasestorage.app",
-  messagingSenderId: "222766162905",
-  appId: "1:222766162905:web:b0a0fda92d49bdac00efc8",
-  measurementId: "G-11X2DXV21S"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-window.firebaseDB = db;
 </script>
 
 </body>
