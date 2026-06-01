@@ -242,7 +242,9 @@ render();
 }
 </script>
 <script type="module">
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
 const firebaseConfig = {
   apiKey: "AIzaSyBYbr58pvJKXZCPrxCd4hYMpzVQ9c2R4DM",
   authDomain: "slb-merchant-register.firebaseapp.com",
@@ -252,6 +254,11 @@ const firebaseConfig = {
   appId: "1:222766162905:web:b0a0fda92d49bdac00efc8",
   measurementId: "G-11X2DXV21S"
 };
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+window.firebaseDB = db;
 </script>
 
 </body>
