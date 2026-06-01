@@ -3,176 +3,176 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sri Laxmi Balaji Jewellers</title>
+<title>Sri Laxmi Balaji Jewellers Ledger</title>
 
 <style>
 body{
-font-family:Arial,sans-serif;
+font-family:Arial;
 margin:0;
 padding:20px;
-background:linear-gradient(rgba(0,0,0,0.85),rgba(20,10,0,0.9)),
-url('https://images.unsplash.com/photo-1617038220319-276d3cfab638?auto=format&fit=crop&w=1600&q=80');
-background-size:cover;
-background-attachment:fixed;
-color:#fff;
-}
-
-.container{
-max-width:1200px;
-margin:auto;
+background:#f8f8f8;
 }
 
 h1{
 text-align:center;
-color:gold;
-font-size:40px;
-text-shadow:2px 2px 10px #000;
+color:#222;
 }
 
-.card{
-background:rgba(255,215,0,0.08);
+.box{
+background:white;
 padding:20px;
 margin:20px 0;
-border-radius:15px;
-backdrop-filter:blur(10px);
-box-shadow:0 0 20px rgba(255,215,0,0.15);
+border-radius:12px;
+box-shadow:0 2px 10px rgba(0,0,0,0.1);
 }
 
 input,select{
 width:100%;
-padding:12px;
+padding:10px;
 margin:8px 0;
-border:none;
+border:1px solid #ccc;
 border-radius:8px;
-font-size:16px;
 }
 
 button{
-background:gold;
-color:black;
-padding:12px 20px;
+background:#222;
+color:white;
+padding:10px 15px;
 border:none;
-border-radius:10px;
-font-weight:bold;
+border-radius:8px;
 cursor:pointer;
-margin-top:10px;
 }
 
 button:hover{
-background:#ffd700;
+background:#444;
 }
 
-.history{
-background:rgba(255,255,255,0.08);
-padding:15px;
-border-radius:10px;
-margin-top:15px;
+.entry{
+background:#fafafa;
+padding:10px;
+margin:10px 0;
+border-left:5px solid gold;
 }
 
 .summary{
-color:gold;
+background:#fff8dc;
+padding:15px;
+margin-top:20px;
+border-radius:10px;
 font-weight:bold;
-font-size:18px;
 }
 </style>
 </head>
-
 <body>
 
-<div class="container">
+<h1>Sri Laxmi Balaji Jewellers Merchant Ledger</h1>
 
-<h1>Sri Laxmi Balaji Jewellers</h1>
-
-<div class="card">
-<h2>Add Merchant</h2>
+<div class="box">
+<h2>Add / Search Merchant</h2>
 <input type="text" id="merchantName" placeholder="Merchant Name">
-<button onclick="addMerchant()">Add Merchant</button>
+<button onclick="loadMerchant()">Open Merchant</button>
 </div>
 
-<div class="card">
-<h2>Search Merchant</h2>
-<input type="text" id="searchMerchant" placeholder="Search Merchant">
-<button onclick="searchMerchant()">Search</button>
-</div>
-
-<div class="card" id="merchantSection" style="display:none;">
+<div class="box" id="merchantBox" style="display:none;">
 <h2 id="merchantTitle"></h2>
 
+<h3>Add Item Received</h3>
 <input type="text" id="itemName" placeholder="Item Name">
-<input type="number" id="itemWeight" placeholder="Exact Weight">
+<input type="number" id="itemWeight" placeholder="Exact Weight (grams)">
+<input type="number" id="itemValue" placeholder="Item Value ₹">
+<button onclick="addItem()">Save Item</button>
 
-<input type="number" id="cashAmount" placeholder="Amount">
-<select id="cashType">
+<h3>Add Payment Given</h3>
+<input type="number" id="paymentAmount" placeholder="Amount ₹">
+<select id="paymentType">
 <option>Cash</option>
 <option>PhonePe</option>
 </select>
+<button onclick="addPayment()">Save Payment</button>
 
-<button onclick="saveEntry()">Save Entry</button>
-
-<div class="history" id="history"></div>
-</div>
-
+<div id="history"></div>
 </div>
 
 <script>
 let merchants = JSON.parse(localStorage.getItem("merchants")) || {};
 let currentMerchant = "";
 
-function addMerchant(){
-let name=document.getElementById("merchantName").value;
-if(name){
-merchants[name]=[];
+function saveData(){
 localStorage.setItem("merchants",JSON.stringify(merchants));
-alert("Merchant Added");
-}
 }
 
-function searchMerchant(){
-let name=document.getElementById("searchMerchant").value;
-if(merchants[name]){
+function loadMerchant(){
+let name=document.getElementById("merchantName").value.trim();
+if(!name) return;
+
+if(!merchants[name]){
+merchants[name]={items:[],payments:[]};
+}
+
 currentMerchant=name;
-document.getElementById("merchantSection").style.display="block";
-document.getElementById("merchantTitle").innerText=name;
+document.getElementById("merchantBox").style.display="block";
+document.getElementById("merchantTitle").innerText="Merchant: "+name;
+
+saveData();
 showHistory();
-}else{
-alert("Merchant not found");
-}
 }
 
-function saveEntry(){
+function addItem(){
 let item=document.getElementById("itemName").value;
 let weight=document.getElementById("itemWeight").value;
-let amount=document.getElementById("cashAmount").value;
-let type=document.getElementById("cashType").value;
-let date=new Date().toLocaleString();
+let value=document.getElementById("itemValue").value;
 
-merchants[currentMerchant].push({
-item,weight,amount,type,date
+merchants[currentMerchant].items.push({
+item,weight,value,date:new Date().toLocaleString()
 });
 
-localStorage.setItem("merchants",JSON.stringify(merchants));
+saveData();
+showHistory();
+}
+
+function addPayment(){
+let amount=document.getElementById("paymentAmount").value;
+let type=document.getElementById("paymentType").value;
+
+merchants[currentMerchant].payments.push({
+amount,type,date:new Date().toLocaleString()
+});
+
+saveData();
 showHistory();
 }
 
 function showHistory(){
 let data=merchants[currentMerchant];
-let html="";
+let html="<h3>Items Received</h3>";
+
 let totalWeight=0;
-let totalAmount=0;
+let totalValue=0;
+let totalPaid=0;
 
-data.forEach(entry=>{
-html+=`<p>${entry.date}<br>
-Item: ${entry.item} | Weight: ${entry.weight} g<br>
-Amount: ₹${entry.amount} via ${entry.type}</p><hr>`;
-
-totalWeight+=Number(entry.weight);
-totalAmount+=Number(entry.amount);
+data.items.forEach(i=>{
+html+=`<div class="entry">${i.date}<br>${i.item} - ${i.weight}g - ₹${i.value}</div>`;
+totalWeight+=Number(i.weight);
+totalValue+=Number(i.value);
 });
 
-html+=`<p class="summary">
+html+="<h3>Payments Given</h3>";
+
+data.payments.forEach(p=>{
+html+=`<div class="entry">${p.date}<br>₹${p.amount} via ${p.type}</div>`;
+totalPaid+=Number(p.amount);
+});
+
+let pending=totalValue-totalPaid;
+
+html+=`
+<div class="summary">
 Total Weight: ${totalWeight} g<br>
-Total Amount: ₹${totalAmount}
-</p>`;
+Total Item Value: ₹${totalValue}<br>
+Total Paid: ₹${totalPaid}<br>
+Pending Balance: ₹${pending}
+</div>
+`;
 
 document.getElementById("history").innerHTML=html;
 }
