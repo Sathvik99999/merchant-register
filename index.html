@@ -1,63 +1,182 @@
-
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Sri Laxmi Balaji Jewellers - Interactive</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sri Laxmi Balaji Jewellers</title>
+
 <style>
 body{
-font-family:Arial;margin:20px;color:white;
-background:linear-gradient(rgba(10,10,10,.8),rgba(10,10,10,.8)),
+font-family:Arial,sans-serif;
+margin:0;
+padding:20px;
+background:linear-gradient(rgba(0,0,0,0.85),rgba(20,10,0,0.9)),
 url('https://images.unsplash.com/photo-1617038220319-276d3cfab638?auto=format&fit=crop&w=1600&q=80');
-background-size:cover;background-attachment:fixed;
+background-size:cover;
+background-attachment:fixed;
+color:#fff;
 }
-.section{background:rgba(212,175,55,.15);padding:15px;border-radius:12px;margin:15px 0}
-input,select{padding:8px;margin:5px;width:250px}
-button{padding:10px;background:gold;border:none;border-radius:8px;font-weight:bold}
-#formSection{display:none}
+
+.container{
+max-width:1200px;
+margin:auto;
+}
+
+h1{
+text-align:center;
+color:gold;
+font-size:40px;
+text-shadow:2px 2px 10px #000;
+}
+
+.card{
+background:rgba(255,215,0,0.08);
+padding:20px;
+margin:20px 0;
+border-radius:15px;
+backdrop-filter:blur(10px);
+box-shadow:0 0 20px rgba(255,215,0,0.15);
+}
+
+input,select{
+width:100%;
+padding:12px;
+margin:8px 0;
+border:none;
+border-radius:8px;
+font-size:16px;
+}
+
+button{
+background:gold;
+color:black;
+padding:12px 20px;
+border:none;
+border-radius:10px;
+font-weight:bold;
+cursor:pointer;
+margin-top:10px;
+}
+
+button:hover{
+background:#ffd700;
+}
+
+.history{
+background:rgba(255,255,255,0.08);
+padding:15px;
+border-radius:10px;
+margin-top:15px;
+}
+
+.summary{
+color:gold;
+font-weight:bold;
+font-size:18px;
+}
 </style>
-<script>
-function showForm(){document.getElementById('formSection').style.display='block';}
-</script>
 </head>
+
 <body>
+
+<div class="container">
+
 <h1>Sri Laxmi Balaji Jewellers</h1>
 
-<div class="section">
+<div class="card">
+<h2>Add Merchant</h2>
+<input type="text" id="merchantName" placeholder="Merchant Name">
+<button onclick="addMerchant()">Add Merchant</button>
+</div>
+
+<div class="card">
 <h2>Search Merchant</h2>
-<input placeholder="Enter Merchant Name">
-<button>Search</button>
+<input type="text" id="searchMerchant" placeholder="Search Merchant">
+<button onclick="searchMerchant()">Search</button>
 </div>
 
-<div class="section">
-<h2>Add New Merchant</h2>
-<button onclick="showForm()">Add Merchant</button>
-</div>
+<div class="card" id="merchantSection" style="display:none;">
+<h2 id="merchantTitle"></h2>
 
-<div id="formSection" class="section">
-<h2>Merchant Entry Form</h2>
-<input placeholder="Merchant Name"><br>
-<input placeholder="Item Name"><br>
-<input placeholder="Weight"><br>
-<input type="datetime-local"><br>
-<input placeholder="Amount"><br>
-<select>
+<input type="text" id="itemName" placeholder="Item Name">
+<input type="number" id="itemWeight" placeholder="Exact Weight">
+
+<input type="number" id="cashAmount" placeholder="Amount">
+<select id="cashType">
 <option>Cash</option>
 <option>PhonePe</option>
-<option>Google Pay</option>
-<option>Bank Transfer</option>
-</select><br>
-<select>
-<option>Paid</option>
-<option>Received</option>
-</select><br>
-<input placeholder="Entered By"><br>
-<button>Save</button>
+</select>
+
+<button onclick="saveEntry()">Save Entry</button>
+
+<div class="history" id="history"></div>
 </div>
 
-<div class="section">
-<h2>Merchant History</h2>
-<p>Search merchant to view full item and cash history.</p>
 </div>
+
+<script>
+let merchants = JSON.parse(localStorage.getItem("merchants")) || {};
+let currentMerchant = "";
+
+function addMerchant(){
+let name=document.getElementById("merchantName").value;
+if(name){
+merchants[name]=[];
+localStorage.setItem("merchants",JSON.stringify(merchants));
+alert("Merchant Added");
+}
+}
+
+function searchMerchant(){
+let name=document.getElementById("searchMerchant").value;
+if(merchants[name]){
+currentMerchant=name;
+document.getElementById("merchantSection").style.display="block";
+document.getElementById("merchantTitle").innerText=name;
+showHistory();
+}else{
+alert("Merchant not found");
+}
+}
+
+function saveEntry(){
+let item=document.getElementById("itemName").value;
+let weight=document.getElementById("itemWeight").value;
+let amount=document.getElementById("cashAmount").value;
+let type=document.getElementById("cashType").value;
+let date=new Date().toLocaleString();
+
+merchants[currentMerchant].push({
+item,weight,amount,type,date
+});
+
+localStorage.setItem("merchants",JSON.stringify(merchants));
+showHistory();
+}
+
+function showHistory(){
+let data=merchants[currentMerchant];
+let html="";
+let totalWeight=0;
+let totalAmount=0;
+
+data.forEach(entry=>{
+html+=`<p>${entry.date}<br>
+Item: ${entry.item} | Weight: ${entry.weight} g<br>
+Amount: ₹${entry.amount} via ${entry.type}</p><hr>`;
+
+totalWeight+=Number(entry.weight);
+totalAmount+=Number(entry.amount);
+});
+
+html+=`<p class="summary">
+Total Weight: ${totalWeight} g<br>
+Total Amount: ₹${totalAmount}
+</p>`;
+
+document.getElementById("history").innerHTML=html;
+}
+</script>
+
 </body>
 </html>
