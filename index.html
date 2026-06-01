@@ -1,0 +1,63 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Sri Laxmi Balaji Jewellers - Interactive</title>
+<style>
+body{
+font-family:Arial;margin:20px;color:white;
+background:linear-gradient(rgba(10,10,10,.8),rgba(10,10,10,.8)),
+url('https://images.unsplash.com/photo-1617038220319-276d3cfab638?auto=format&fit=crop&w=1600&q=80');
+background-size:cover;background-attachment:fixed;
+}
+.section{background:rgba(212,175,55,.15);padding:15px;border-radius:12px;margin:15px 0}
+input,select{padding:8px;margin:5px;width:250px}
+button{padding:10px;background:gold;border:none;border-radius:8px;font-weight:bold}
+#formSection{display:none}
+</style>
+<script>
+function showForm(){document.getElementById('formSection').style.display='block';}
+</script>
+</head>
+<body>
+<h1>Sri Laxmi Balaji Jewellers</h1>
+
+<div class="section">
+<h2>Search Merchant</h2>
+<input placeholder="Enter Merchant Name">
+<button>Search</button>
+</div>
+
+<div class="section">
+<h2>Add New Merchant</h2>
+<button onclick="showForm()">Add Merchant</button>
+</div>
+
+<div id="formSection" class="section">
+<h2>Merchant Entry Form</h2>
+<input placeholder="Merchant Name"><br>
+<input placeholder="Item Name"><br>
+<input placeholder="Weight"><br>
+<input type="datetime-local"><br>
+<input placeholder="Amount"><br>
+<select>
+<option>Cash</option>
+<option>PhonePe</option>
+<option>Google Pay</option>
+<option>Bank Transfer</option>
+</select><br>
+<select>
+<option>Paid</option>
+<option>Received</option>
+</select><br>
+<input placeholder="Entered By"><br>
+<button>Save</button>
+</div>
+
+<div class="section">
+<h2>Merchant History</h2>
+<p>Search merchant to view full item and cash history.</p>
+</div>
+</body>
+</html>
