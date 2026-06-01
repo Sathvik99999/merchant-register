@@ -3,117 +3,170 @@
 <head>
 <meta charset="UTF-8">
 <title>Sri Laxmi Balaji Jewellers</title>
+
 <style>
 body{
-font-family:Arial;
 margin:0;
-padding:20px;
-background:linear-gradient(rgba(0,0,0,0.85),rgba(40,20,0,0.9)),
-url('https://images.unsplash.com/photo-1515562141207-7a88fb7ce338');
+font-family:Arial;
+background:
+linear-gradient(rgba(0,0,0,0.88),rgba(20,10,0,0.92)),
+url('https://images.unsplash.com/photo-1617038260897-41a1f14a8ca0');
 background-size:cover;
 color:white;
+padding:20px;
 }
 
-h1{text-align:center;color:gold;}
+h1{
+text-align:center;
+color:gold;
+font-size:48px;
+text-shadow:0 0 20px gold;
+}
 
-.card{
-background:rgba(255,215,0,0.08);
+.mainCard{
+background:rgba(255,215,0,0.07);
+border:1px solid rgba(255,215,0,0.2);
+border-radius:20px;
 padding:20px;
-margin:15px 0;
-border-radius:15px;
+margin:20px 0;
+backdrop-filter:blur(8px);
 }
 
 input,select{
 width:100%;
-padding:10px;
+padding:14px;
 margin:8px 0;
-border-radius:8px;
 border:none;
+border-radius:12px;
+font-size:16px;
 }
 
 button{
-padding:10px;
-background:gold;
+padding:14px 22px;
+background:linear-gradient(45deg,#ffd700,#ffb700);
 border:none;
-border-radius:8px;
+border-radius:12px;
 font-weight:bold;
 cursor:pointer;
 }
 
-.flex{
-display:flex;
+.grid{
+display:grid;
+grid-template-columns:1fr 1fr;
 gap:20px;
 }
 
-.section{
-flex:1;
-background:rgba(255,255,255,0.08);
-padding:15px;
-border-radius:12px;
+.panel{
+background:rgba(255,255,255,0.05);
+padding:20px;
+border-radius:18px;
 }
 
-.history{
+.table{
 margin-top:15px;
-background:rgba(255,255,255,0.08);
-padding:10px;
-border-radius:8px;
+background:rgba(255,255,255,0.06);
+padding:15px;
+border-radius:15px;
+}
+
+.summary{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:15px;
+}
+
+.card{
+background:rgba(255,215,0,0.08);
+padding:20px;
+border-radius:16px;
+text-align:center;
+}
+
+h2,h3{
+color:gold;
 }
 </style>
 </head>
+
 <body>
 
 <h1>Sri Laxmi Balaji Jewellers</h1>
 
-<div class="card">
-<input id="merchant" placeholder="Merchant Name">
+<div class="mainCard">
+<input id="merchant" placeholder="Enter Merchant Name">
 <button onclick="openMerchant()">Open Merchant</button>
 </div>
 
-<div id="main" style="display:none;" class="flex">
+<div id="dashboard" style="display:none;">
 
-<div class="section">
-<h2>Items</h2>
-<input id="item" placeholder="Item Name">
-<input id="weight" placeholder="Weight">
-<button onclick="addItem()">Add Item</button>
-<div id="itemHistory" class="history"></div>
+<div class="summary">
+<div class="card">
+<h3>Total Weight</h3>
+<p id="tw">0 g</p>
 </div>
 
-<div class="section">
-<h2>Payments</h2>
-<input id="amount" placeholder="Amount">
+<div class="card">
+<h3>Total Paid</h3>
+<p id="tp">₹0</p>
+</div>
+
+<div class="card">
+<h3>Total Entries</h3>
+<p id="te">0</p>
+</div>
+</div>
+
+<div class="grid">
+
+<div class="panel">
+<h2>Items Section</h2>
+
+<input id="itemName" placeholder="Item Name">
+<input id="itemWeight" placeholder="Exact Weight">
+<button onclick="addItem()">Add Item</button>
+
+<div class="table" id="itemHistory"></div>
+</div>
+
+<div class="panel">
+<h2>Payments Section</h2>
+
+<input id="amount" placeholder="Enter Amount">
+
 <select id="ptype">
 <option>Cash</option>
 <option>PhonePe</option>
+<option>Bank Transfer</option>
 </select>
+
 <button onclick="addPayment()">Add Payment</button>
-<div id="paymentHistory" class="history"></div>
+
+<div class="table" id="paymentHistory"></div>
 </div>
 
 </div>
-
-<div class="card" id="summary"></div>
+</div>
 
 <script>
-let data=JSON.parse(localStorage.getItem("shop"))||{};
+let db=JSON.parse(localStorage.getItem("goldshop"))||{};
 let current="";
 
 function save(){
-localStorage.setItem("shop",JSON.stringify(data));
+localStorage.setItem("goldshop",JSON.stringify(db));
 }
 
 function openMerchant(){
 current=document.getElementById("merchant").value;
-if(!data[current]) data[current]={items:[],payments:[]};
-document.getElementById("main").style.display="flex";
+if(!db[current]) db[current]={items:[],payments:[]};
+document.getElementById("dashboard").style.display="block";
 render();
 save();
 }
 
 function addItem(){
-data[current].items.push({
-item:document.getElementById("item").value,
-weight:document.getElementById("weight").value,
+db[current].items.push({
+name:itemName.value,
+weight:Number(itemWeight.value),
 date:new Date().toLocaleString()
 });
 save();
@@ -121,9 +174,9 @@ render();
 }
 
 function addPayment(){
-data[current].payments.push({
-amount:document.getElementById("amount").value,
-type:document.getElementById("ptype").value,
+db[current].payments.push({
+amount:Number(amount.value),
+type:ptype.value,
 date:new Date().toLocaleString()
 });
 save();
@@ -131,34 +184,47 @@ render();
 }
 
 function render(){
-let items="",payments="",tw=0,tp=0;
+let items="",payments="";
+let tw=0,tp=0;
 
-data[current].items.forEach((x,i)=>{
-items+=`${x.date}<br>${x.item} - ${x.weight}g <button onclick="deleteItem(${i})">Delete</button><hr>`;
-tw+=Number(x.weight);
+db[current].items.forEach((x,i)=>{
+tw+=x.weight;
+items+=`
+<div>
+${x.date}<br>
+${x.name} - ${x.weight} g
+<button onclick="deleteItem(${i})">Delete</button>
+<hr>
+</div>`;
 });
 
-data[current].payments.forEach((x,i)=>{
-payments+=`${x.date}<br>₹${x.amount} via ${x.type} <button onclick="deletePayment(${i})">Delete</button><hr>`;
-tp+=Number(x.amount);
+db[current].payments.forEach((x,i)=>{
+tp+=x.amount;
+payments+=`
+<div>
+${x.date}<br>
+₹${x.amount} via ${x.type}
+<button onclick="deletePayment(${i})">Delete</button>
+<hr>
+</div>`;
 });
 
-document.getElementById("itemHistory").innerHTML=items;
-document.getElementById("paymentHistory").innerHTML=payments;
-document.getElementById("summary").innerHTML=
-`<h2>History & Summary</h2>
-Total Weight: ${tw} g<br>
-Total Paid: ₹${tp}`;
+itemHistory.innerHTML=items;
+paymentHistory.innerHTML=payments;
+
+tw.innerHTML=tw+" g";
+tp.innerHTML="₹"+tp;
+te.innerHTML=db[current].items.length+db[current].payments.length;
 }
 
 function deleteItem(i){
-data[current].items.splice(i,1);
+db[current].items.splice(i,1);
 save();
 render();
 }
 
 function deletePayment(i){
-data[current].payments.splice(i,1);
+db[current].payments.splice(i,1);
 save();
 render();
 }
