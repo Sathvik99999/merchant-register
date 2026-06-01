@@ -9,27 +9,24 @@ body{
 margin:0;
 font-family:Arial;
 padding:20px;
-background:
-linear-gradient(rgba(0,0,0,0.85),rgba(30,15,0,0.9)),
+background:linear-gradient(rgba(0,0,0,0.85),rgba(40,20,0,0.9)),
 url('https://images.unsplash.com/photo-1515562141207-7a88fb7ce364');
 background-size:cover;
-background-attachment:fixed;
 color:white;
 }
 
 h1{
 text-align:center;
 color:gold;
-font-size:55px;
+font-size:50px;
 text-shadow:0 0 20px gold;
 }
 
 .card{
-background:rgba(255,215,0,0.06);
+background:rgba(255,215,0,0.08);
 padding:20px;
 margin:15px 0;
 border-radius:18px;
-backdrop-filter:blur(10px);
 }
 
 .grid{
@@ -45,7 +42,7 @@ gap:15px;
 }
 
 .box{
-background:rgba(255,255,255,0.06);
+background:rgba(255,255,255,0.08);
 padding:20px;
 border-radius:16px;
 text-align:center;
@@ -57,8 +54,8 @@ padding:14px;
 margin:8px 0;
 border:none;
 border-radius:10px;
-font-size:16px;
 }
+
 button{
 padding:12px 18px;
 background:gold;
@@ -127,13 +124,12 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
-apiKey: "AIzaSyBYbr58pvJKXZCPrxCd4hYMpzVQ9c2R4DM",
-authDomain: "slb-merchant-register.firebaseapp.com",
-projectId: "slb-merchant-register",
-storageBucket: "slb-merchant-register.firebasestorage.app",
-messagingSenderId: "222766162905",
-appId: "1:222766162905:web:b0a0fda92d49bdac00efc8",
-measurementId: "G-11X2DXV21S"
+apiKey:"AIzaSyBYbr58pvJKXZCPrxCd4hYMpzVQ9c2R4DM",
+authDomain:"slb-merchant-register.firebaseapp.com",
+projectId:"slb-merchant-register",
+storageBucket:"slb-merchant-register.firebasestorage.app",
+messagingSenderId:"222766162905",
+appId:"1:222766162905:web:b0a0fda92d49bdac00efc8"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -150,12 +146,16 @@ async function loadDB(){
 const snap = await getDoc(doc(firestoreDB,"merchantData","main"));
 if(snap.exists()){
 db = snap.data();
-if(currentMerchant) render();
 }
 }
 
 window.openMerchant = async function(){
 currentMerchant=document.getElementById("merchant").value;
+
+if(!currentMerchant){
+alert("Enter merchant name");
+return;
+}
 
 await loadDB();
 
@@ -184,6 +184,7 @@ render();
 window.addPayment = async function(){
 let amount=parseFloat(document.getElementById("paymentAmount").value);
 let type=document.getElementById("paymentType").value;
+
 if(!isNaN(amount)){
 db[currentMerchant].payments.push({
 amount,type,date:new Date().toLocaleString()
@@ -197,14 +198,14 @@ function render(){
 let totalWeight=0,totalPaid=0;
 let itemHTML="",paymentHTML="";
 
-db[currentMerchant].items.forEach((x,i)=>{
+db[currentMerchant].items.forEach(x=>{
 totalWeight+=x.weight;
-itemHTML+=⁠ ${x.date}<br>${x.item} - ${x.weight} g<hr> ⁠;
+itemHTML+=`${x.date}<br>${x.item} - ${x.weight} g<hr>`;
 });
 
-db[currentMerchant].payments.forEach((x,i)=>{
+db[currentMerchant].payments.forEach(x=>{
 totalPaid+=x.amount;
-paymentHTML+=⁠ ${x.date}<br>₹${x.amount} via ${x.type}<hr> ⁠;
+paymentHTML+=`${x.date}<br>₹${x.amount} via ${x.type}<hr>`;
 });
 
 document.getElementById("itemHistory").innerHTML=itemHTML;
