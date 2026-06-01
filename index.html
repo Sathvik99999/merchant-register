@@ -3,40 +3,36 @@
 <head>
 <meta charset="UTF-8">
 <title>Sri Laxmi Balaji Jewellers</title>
-
 <style>
 body{
 font-family:Arial;
-margin:20px;
-background:#f4f4f4;
+margin:0;
+padding:20px;
+background:linear-gradient(rgba(0,0,0,0.85),rgba(40,20,0,0.9)),
+url('https://images.unsplash.com/photo-1515562141207-7a88fb7ce338');
+background-size:cover;
+color:white;
 }
 
-h1{
-text-align:center;
-color:#b8860b;
-}
-
-.container{
-max-width:1400px;
-margin:auto;
-}
+h1{text-align:center;color:gold;}
 
 .card{
-background:white;
+background:rgba(255,215,0,0.08);
 padding:20px;
 margin:15px 0;
-border-radius:12px;
-box-shadow:0 2px 8px rgba(0,0,0,0.1);
+border-radius:15px;
 }
 
 input,select{
+width:100%;
 padding:10px;
-margin:5px;
-width:220px;
+margin:8px 0;
+border-radius:8px;
+border:none;
 }
 
 button{
-padding:10px 15px;
+padding:10px;
 background:gold;
 border:none;
 border-radius:8px;
@@ -44,147 +40,127 @@ font-weight:bold;
 cursor:pointer;
 }
 
-.merchantArea{
+.flex{
 display:flex;
 gap:20px;
 }
 
 .section{
 flex:1;
-background:#fafafa;
-padding:20px;
+background:rgba(255,255,255,0.08);
+padding:15px;
 border-radius:12px;
 }
 
 .history{
 margin-top:15px;
-background:#eee;
-padding:15px;
+background:rgba(255,255,255,0.08);
+padding:10px;
 border-radius:8px;
 }
 </style>
 </head>
-
 <body>
 
-<div class="container">
-
-<h1>Sri Laxmi Balaji Jewellers Merchant Register</h1>
+<h1>Sri Laxmi Balaji Jewellers</h1>
 
 <div class="card">
-<h2>Add Merchant</h2>
-<input type="text" id="merchantName" placeholder="Merchant Name">
-<button onclick="addMerchant()">Add</button>
+<input id="merchant" placeholder="Merchant Name">
+<button onclick="openMerchant()">Open Merchant</button>
 </div>
 
-<div class="card">
-<h2>Search Merchant</h2>
-<input type="text" id="searchMerchant" placeholder="Merchant Name">
-<button onclick="loadMerchant()">Search</button>
-</div>
+<div id="main" style="display:none;" class="flex">
 
-<div id="merchantSection" style="display:none;" class="card">
-
-<h2 id="merchantTitle"></h2>
-
-<div class="merchantArea">
-
-<!-- ITEMS -->
 <div class="section">
-<h3>Items Section</h3>
-
-<input id="itemName" placeholder="Item Name">
-<input id="itemWeight" type="number" placeholder="Weight">
+<h2>Items</h2>
+<input id="item" placeholder="Item Name">
+<input id="weight" placeholder="Weight">
 <button onclick="addItem()">Add Item</button>
-
-<div class="history" id="itemHistory"></div>
+<div id="itemHistory" class="history"></div>
 </div>
 
-<!-- AMOUNT -->
 <div class="section">
-<h3>Amount Section</h3>
-
-<input id="amount" type="number" placeholder="Amount">
-<select id="paymentType">
+<h2>Payments</h2>
+<input id="amount" placeholder="Amount">
+<select id="ptype">
 <option>Cash</option>
 <option>PhonePe</option>
 </select>
-
 <button onclick="addPayment()">Add Payment</button>
-
-<div class="history" id="paymentHistory"></div>
+<div id="paymentHistory" class="history"></div>
 </div>
 
 </div>
-</div>
 
-</div>
+<div class="card" id="summary"></div>
 
 <script>
-let merchants = JSON.parse(localStorage.getItem("merchants")) || {};
-let currentMerchant = "";
+let data=JSON.parse(localStorage.getItem("shop"))||{};
+let current="";
 
-function addMerchant(){
-let name=document.getElementById("merchantName").value;
-if(name){
-merchants[name]={items:[],payments:[]};
-save();
-alert("Merchant Added");
-}
+function save(){
+localStorage.setItem("shop",JSON.stringify(data));
 }
 
-function loadMerchant(){
-let name=document.getElementById("searchMerchant").value;
-if(merchants[name]){
-currentMerchant=name;
-document.getElementById("merchantSection").style.display="block";
-document.getElementById("merchantTitle").innerText=name;
+function openMerchant(){
+current=document.getElementById("merchant").value;
+if(!data[current]) data[current]={items:[],payments:[]};
+document.getElementById("main").style.display="flex";
 render();
-}
+save();
 }
 
 function addItem(){
-let item=document.getElementById("itemName").value;
-let weight=document.getElementById("itemWeight").value;
-
-merchants[currentMerchant].items.push({
-item,weight,date:new Date().toLocaleString()
+data[current].items.push({
+item:document.getElementById("item").value,
+weight:document.getElementById("weight").value,
+date:new Date().toLocaleString()
 });
-
 save();
 render();
 }
 
 function addPayment(){
-let amount=document.getElementById("amount").value;
-let type=document.getElementById("paymentType").value;
-
-merchants[currentMerchant].payments.push({
-amount,type,date:new Date().toLocaleString()
+data[current].payments.push({
+amount:document.getElementById("amount").value,
+type:document.getElementById("ptype").value,
+date:new Date().toLocaleString()
 });
-
 save();
 render();
 }
 
 function render(){
-let itemHTML="";
-let payHTML="";
+let items="",payments="",tw=0,tp=0;
 
-merchants[currentMerchant].items.forEach(i=>{
-itemHTML+=`${i.date} - ${i.item} (${i.weight}g)<br>`;
+data[current].items.forEach((x,i)=>{
+items+=`${x.date}<br>${x.item} - ${x.weight}g <button onclick="deleteItem(${i})">Delete</button><hr>`;
+tw+=Number(x.weight);
 });
 
-merchants[currentMerchant].payments.forEach(p=>{
-payHTML+=`${p.date} - ₹${p.amount} (${p.type})<br>`;
+data[current].payments.forEach((x,i)=>{
+payments+=`${x.date}<br>₹${x.amount} via ${x.type} <button onclick="deletePayment(${i})">Delete</button><hr>`;
+tp+=Number(x.amount);
 });
 
-document.getElementById("itemHistory").innerHTML=itemHTML;
-document.getElementById("paymentHistory").innerHTML=payHTML;
+document.getElementById("itemHistory").innerHTML=items;
+document.getElementById("paymentHistory").innerHTML=payments;
+document.getElementById("summary").innerHTML=
+`<h2>History & Summary</h2>
+Total Weight: ${tw} g<br>
+Total Paid: ₹${tp}`;
 }
 
-function save(){
-localStorage.setItem("merchants",JSON.stringify(merchants));
+function deleteItem(i){
+data[current].items.splice(i,1);
+save();
+render();
+}
+
+function deletePayment(i){
+data[current].payments.splice(i,1);
+save();
+render();
 }
 </script>
 
